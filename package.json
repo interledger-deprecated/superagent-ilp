@@ -1,0 +1,40 @@
+{
+  "name": "superagent-ilp",
+  "version": "0.0.0",
+  "description": "Superagent extension for ILP HTTP micropayments",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/justmoon/superagent-ilp.git"
+  },
+  "keywords": [
+    "micropayment",
+    "ilp",
+    "interledger",
+    "402",
+    "http",
+    "pay",
+    "payment",
+    "money"
+  ],
+  "author": "Stefan Thomas <justmoon@members.fsf.org>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/justmoon/superagent-ilp/issues"
+  },
+  "homepage": "https://github.com/justmoon/superagent-ilp#readme",
+  "devDependencies": {
+    "eslint": "^4.3.0",
+    "eslint-config-standard": "^10.2.1",
+    "eslint-plugin-import": "^2.7.0",
+    "eslint-plugin-node": "^5.1.1",
+    "eslint-plugin-promise": "^3.5.0",
+    "eslint-plugin-standard": "^3.0.1"
+  },
+  "dependencies": {
+    "ilp": "^11.2.0"
+  }
+}
