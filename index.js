@@ -35,8 +35,13 @@ module.exports = (superagent, plugin) => {
           firstAttempt = false
           debug('server responded 402 - Pay ' + res.get('Pay'))
 
-          const [ destinationAmount, destinationAccount, sharedSecret ] =
-            res.get('Pay').split(' ')
+          const payParams = res.get('Pay').split(' ')
+          if (payParams.length > 3) {
+            throw new Error('This version of superagent ILP cannot parse ' +
+              'this version of the "Pay" header: ' + res.get('Pay'))
+          }
+
+          const [ destinationAmount, destinationAccount, sharedSecret ] = payParams
 
           const { packet, condition } = ILP.PSK.createPacketAndCondition({
             sharedSecret,
@@ -45,8 +50,11 @@ module.exports = (superagent, plugin) => {
             data: token
           })
 
+          debug('created packet and condition via PSK')
+
           ILP.ILQP.quoteByPacket(plugin, packet)
             .then((quote) => {
+              debug('sending transfer')
               return plugin.sendTransfer({
                 id: uuid(),
                 to: quote.connectorAccount,
@@ -63,8 +71,9 @@ module.exports = (superagent, plugin) => {
                 plugin.on('outgoing_fulfill', resolve)
               })
             })
-            .then(() => {
+            .then((transfer, fulfillment) => {
               this.called = false
+              debug('retrying request with funded token')
               return this._retry()
             })
             .catch(err => fn && fn(err))
