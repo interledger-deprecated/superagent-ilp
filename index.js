@@ -5,6 +5,7 @@ const ILP = require('ilp')
 const uuid = require('uuid')
 const moment = require('moment')
 const crypto = require('crypto')
+const PAYMENT_METHOD_IDENTIFIER = 'interledger-psk'
 
 const base64url = buffer => buffer.toString('base64')
   .replace(/=/g, '')
@@ -36,12 +37,14 @@ module.exports = (superagent, plugin) => {
           debug('server responded 402 - Pay ' + res.get('Pay'))
 
           const payParams = res.get('Pay').split(' ')
-          if (payParams.length > 3) {
-            throw new Error('This version of superagent ILP cannot parse ' +
-              'this version of the "Pay" header: ' + res.get('Pay'))
-          }
-
+          const paymentMethod = payParams[0].match(/[A-Za-z]/)
+            ? payParams.shift()
+            : PAYMENT_METHOD_IDENTIFIER
           const [ destinationAmount, destinationAccount, sharedSecret ] = payParams
+          if (paymentMethod !== PAYMENT_METHOD_IDENTIFIER) {
+            throw new Error('Unsupported payment method in "Pay" ' +
+              'header: ' + res.get('Pay'))
+          }
 
           const { packet, condition } = ILP.PSK.createPacketAndCondition({
             sharedSecret,
