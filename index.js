@@ -7,6 +7,8 @@ const moment = require('moment')
 const crypto = require('crypto')
 const PAYMENT_METHOD_IDENTIFIER = 'interledger-psk'
 
+const PAYMENT_METHOD_IDENTIFIER = 'interledger-psk'
+
 const base64url = buffer => buffer.toString('base64')
   .replace(/=/g, '')
   .replace(/\+/g, '-')
@@ -44,6 +46,10 @@ module.exports = (superagent, plugin) => {
           if (paymentMethod !== PAYMENT_METHOD_IDENTIFIER) {
             throw new Error('Unsupported payment method in "Pay" ' +
               'header: ' + res.get('Pay'))
+          }
+
+          if (paymentMethodIdentifier !== PAYMENT_METHOD_IDENTIFIER) {
+            throw new Error('Unsupported payment method')
           }
 
           const { packet, condition } = ILP.PSK.createPacketAndCondition({
