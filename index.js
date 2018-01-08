@@ -1,12 +1,15 @@
 'use strict'
 
-const compat = require('ilp-compat-plugin')
 const debug = require('debug')('superagent-ilp')
-const ILP = require('ilp')
 const uuid = require('uuid')
 const moment = require('moment')
 const crypto = require('crypto')
-const PAYMENT_METHOD_IDENTIFIER = 'interledger-psk'
+
+const PSK_IDENTIFIER = 'interledger-psk'
+const handlePskRequest = require('./src/psk')
+
+const PSK_2_IDENTIFIER = 'interledger-psk2'
+const handlePsk2Request = require('./src/psk2')
 
 const base64url = buffer => buffer.toString('base64')
   .replace(/=/g, '')
@@ -42,40 +45,22 @@ module.exports = (superagent, boundPlugin) => {
             const payParams = res.get('Pay').split(' ')
             const paymentMethod = payParams[0].match(/[A-Za-z]/)
               ? payParams.shift()
-              : PAYMENT_METHOD_IDENTIFIER
-            const [ destinationAmount, destinationAccount, sharedSecret ] = payParams
-            if (paymentMethod !== PAYMENT_METHOD_IDENTIFIER) {
-              throw new Error('Unsupported payment method in "Pay" ' +
-                'header: ' + res.get('Pay'))
+              : PSK_IDENTIFIER
+
+            let handler
+            switch (paymentMethod) {
+              case PSK_IDENTIFIER:
+                handler = handlePskRequest
+                break
+              case PSK_2_IDENTIFIER:
+                handler = handlePsk2Request
+                break
+              default:
+                throw new Error('unsupported payment method in `Pay`. ' +
+                  'header=' + res.get('Pay'))
             }
 
-            const { packet, condition } = ILP.PSK.createPacketAndCondition({
-              sharedSecret,
-              destinationAccount,
-              destinationAmount,
-              data: token
-            })
-
-            debug('created packet and condition via PSK')
-
-            const quote = await ILP.ILQP.quoteByPacket(plugin, packet)
-
-            debug('sending transfer')
-            const response = await compat(plugin).sendData(IlpPacket.serializeIlpPrepare({
-              amount: quote.sourceAmount,
-              executionCondition: condition,
-              destination: destinationAccount,
-              data: packet,
-              expiresAt: new Date(Date.now() + 1000 * quote.sourceExpiryDuration)
-            }))
-
-            if (response[0] === IlpPacket.Type.TYPE_ILP_REJECT) {
-              throw new Error('transfer was rejected. response=' + response.toString('hex')) 
-            }
-
-            this.called = false
-            debug('retrying request with funded token')
-            return this._retry()
+            return handler.call(this, { res, payParams })
           } else {
             fn && fn(err, res)
           }
