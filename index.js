@@ -60,7 +60,7 @@ module.exports = (superagent, boundPlugin) => {
                   'header=' + res.get('Pay'))
             }
 
-            return handler.call(this, { res, payParams })
+            return handler.call(this, { res, payParams, maxPrice, plugin, token })
           } else {
             fn && fn(err, res)
           }
