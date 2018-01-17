@@ -1,8 +1,9 @@
 const PSK2 = require('ilp-protocol-psk2')
 const BigNumber = require('bignumber.js')
 const debug = require('debug')('superagent-ilp:psk2')
+const CHUNK_AMOUNT = 250 // TODO
 
-module.exports = async function handlePsk2Request ({
+async function streamPayment ({
   res,
   payParams,
   maxPrice,
@@ -10,10 +11,70 @@ module.exports = async function handlePsk2Request ({
   token
 }) {
   const [ destinationAccount, _sharedSecret, destinationAmount ] = payParams
+  debug('streaming via psk2. destination=' + destinationAccount)
+
   const id = token
   const sharedSecret = Buffer.from(_sharedSecret, 'base64')
+  let sequence = 0
+  let total = 0
+
+  this.set('Stream-Payment', true)
+
+  debug('opening request while streaming payment.')
+  let resolved = false
+  this.called = false
+  const promise = this._retry()
+    .then((res) => {
+      debug('streaming request success.')
+      resolved = true
+      return res
+    })
+    .catch((e) => {
+      debug('streaming request failed. error=', e)
+      resolved = true
+      throw e
+    })
+  
+  while (!resolved) {
+    debug('streaming chunk via psk2. amount=' + CHUNK_AMOUNT,
+      'total=' + total)
+    if (new BigNumber(total).gt(maxPrice)) {
+      throw new Error('streaming payment exceeds max price. total=' + total +
+        'maxPrice=' + maxPrice)
+    }
+
+    try {
+      await PSK2.sendSingleChunk(plugin, {
+        id,
+        destinationAccount,
+        sharedSecret,
+        sourceAmount: CHUNK_AMOUNT,
+        lastChunk: false,
+        sequence
+      })
+      total += CHUNK_AMOUNT
+    } catch (e) {
+      debug('error on payment chunk. message=' + e.message)
+    }
+  }
+
+  return promise
+}
+
+module.exports = async function handlePsk2Request (params) {
+  const {
+    res,
+    payParams,
+    maxPrice,
+    plugin,
+    token
+  } = params
+  const [ destinationAccount, _sharedSecret, destinationAmount ] = payParams
+  const id = token
+  const sharedSecret = Buffer.from(_sharedSecret, 'base64')
+
   if (!destinationAmount) { // TODO: behavior in this case
-    throw new Error('this endpoint has no fixed destination amount')
+    return streamPayment.call(this, params)
   }
 
   debug('quoting destination amount via psk2. amount=' + destinationAmount,
