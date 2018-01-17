@@ -55,6 +55,7 @@ async function streamPayment ({
       total += CHUNK_AMOUNT
     } catch (e) {
       debug('error on payment chunk. message=' + e.message)
+      break
     }
   }
 
