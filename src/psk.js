@@ -2,6 +2,7 @@ const ILP = require('ilp')
 const BigNumber = require('bignumber.js')
 const compat = require('ilp-compat-plugin')
 const debug = require('debug')('superagent-ilp:psk')
+const IlpPacket = require('ilp-packet')
 
 module.exports = async function handlePskRequest ({ res, payParams, maxPrice, plugin, token }) {
   const [ destinationAmount, destinationAccount, sharedSecret ] = payParams
@@ -31,7 +32,7 @@ module.exports = async function handlePskRequest ({ res, payParams, maxPrice, pl
   }))
 
   if (response[0] === IlpPacket.Type.TYPE_ILP_REJECT) {
-    throw new Error('transfer was rejected. response=' + response.toString('hex')) 
+    throw new Error('transfer was rejected. response=' + response.toString('hex'))
   }
 
   this.called = false
