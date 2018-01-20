@@ -74,7 +74,7 @@ module.exports = async function handlePsk2Request (params) {
   const id = token
   const sharedSecret = Buffer.from(_sharedSecret, 'base64')
 
-  if (!destinationAmount) { // TODO: behavior in this case
+  if (!destinationAmount) {
     return streamPayment.call(this, params)
   }
 

@@ -3,7 +3,7 @@ const BigNumber = require('bignumber.js')
 const compat = require('ilp-compat-plugin')
 const debug = require('debug')('superagent-ilp:psk')
 
-module.exports = async function handlePskRequest ({ res, payParams, maxPrice, plugin }) {
+module.exports = async function handlePskRequest ({ res, payParams, maxPrice, plugin, token }) {
   const [ destinationAmount, destinationAccount, sharedSecret ] = payParams
   const { packet, condition } = ILP.PSK.createPacketAndCondition({
     sharedSecret,
