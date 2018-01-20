@@ -10,7 +10,7 @@ async function streamPayment ({
   plugin,
   token
 }) {
-  const [ destinationAccount, _sharedSecret, destinationAmount ] = payParams
+  const [ destinationAccount, _sharedSecret ] = payParams
   debug('streaming via psk2. destination=' + destinationAccount)
 
   const id = token
@@ -34,7 +34,7 @@ async function streamPayment ({
       resolved = true
       throw e
     })
-  
+
   while (!resolved) {
     debug('streaming chunk via psk2. amount=' + CHUNK_AMOUNT,
       'total=' + total)
@@ -55,7 +55,7 @@ async function streamPayment ({
       total += CHUNK_AMOUNT
     } catch (e) {
       debug('error on payment chunk. message=' + e.message)
-      break
+      resolved = true
     }
   }
 
@@ -64,7 +64,6 @@ async function streamPayment ({
 
 module.exports = async function handlePsk2Request (params) {
   const {
-    res,
     payParams,
     maxPrice,
     plugin,
@@ -84,7 +83,7 @@ module.exports = async function handlePsk2Request (params) {
     id,
     sharedSecret,
     destinationAccount,
-    destinationAmount,  
+    destinationAmount,
     sequence: 0
   })
 
@@ -95,7 +94,7 @@ module.exports = async function handlePsk2Request (params) {
   }
 
   debug('sending payment via psk2. sourceAmount=' + sourceAmount)
-  const response = await PSK2.sendSingleChunk(plugin, {
+  await PSK2.sendSingleChunk(plugin, {
     id,
     destinationAccount,
     sharedSecret,

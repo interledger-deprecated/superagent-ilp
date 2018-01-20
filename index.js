@@ -1,8 +1,6 @@
 'use strict'
 
 const debug = require('debug')('superagent-ilp')
-const uuid = require('uuid')
-const moment = require('moment')
 const crypto = require('crypto')
 
 const PSK_IDENTIFIER = 'interledger-psk'
@@ -33,7 +31,6 @@ module.exports = (superagent, boundPlugin) => {
     this.set('Pay-Token', base64url(token))
 
     this.end = (fn) => {
-      const timeout = this._timeout
       let firstAttempt = true
 
       return prevEnd.call(this, async (err, res) => {
