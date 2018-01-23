@@ -33,7 +33,11 @@
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-node": "^5.2.1",
     "eslint-plugin-promise": "^3.6.0",
-    "eslint-plugin-standard": "^3.0.1"
+    "eslint-plugin-standard": "^3.0.1",
+    "ilp-plugin": "^3.0.0",
+    "ilp-plugin-btp": "github:interledgerjs/ilp-plugin-btp",
+    "koa-bodyparser": "^4.2.0",
+    "superagent": "^3.8.2"
   },
   "dependencies": {
     "ilp": "interledgerjs/ilp#refactor/st-lpi2",
