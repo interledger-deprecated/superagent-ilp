@@ -11,8 +11,9 @@ const plugin = require('ilp-plugin')()
 const superagentIlp = require('superagent-ilp')(superagent, plugin)
 
 async function run () {
+  await plugin.connect()
   const res = await superagentIlp
-    .post('http://test.interledger.org/')
+    .post('http://localhost:8080/')
     .pay(2000) // pays _up to_ 2000 base units of your ledger, as configured for ilp-plugin
 
   console.log(res.body)
@@ -28,6 +29,7 @@ It's written using [`koa-ilp`](https://github.com/interledgerjs/koa-ilp).
 ```js
 const Koa = require('koa')
 const router = require('koa-router')()
+const parser = require('koa-bodyparser')()
 const app = new Koa()
 
 const Ilp = require('koa-ilp')
