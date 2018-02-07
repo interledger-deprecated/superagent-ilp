@@ -1,6 +1,8 @@
 # Superagent-ILP
 > Extension of Superagent to pay for HTTP-ILP
 
+**DEPRECATED: This module has been deprecated in favor of [ILP Fetch](https://github.com/interledgerjs/ilp-fetch)**
+
 To use Superagent ILP, combine the superagent module with an plugin (as
 returned from [`ilp-plugin`](https://github.com/interledgerjs/ilp-plugin) in
 this example).
